@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aurex Systems · engineering intelligent futures</title>
+    <!-- Fonts & base styling -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #030614;
+            font-family: 'Poppins', sans-serif;
+            color: #eef5ff;
+            line-height: 1.6;
+            overflow-x: hidden;
+            scroll-behavior: smooth;
+        }
+
+        /* custom slick scroll (smooth already) */
+        ::-webkit-scrollbar {
+            width: 8px;
+            background: #0a0c1a;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(145deg, #00c8ff, #9945ff);
+            border-radius: 20px;
+        }
+
+        /* particle canvas background */
+        #particle-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 0;
+            pointer-events: none; /* allow interaction with content */
+        }
+
+        .main-wrapper {
+            position: relative;
+            z-index: 5;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem 2rem 1rem;
+            backdrop-filter: blur(0px); /* clean, just overlay */
+        }
+
+        /* glassmorphism + glow card base */
+        .glass-card {
+            background: rgba(5, 10, 25, 0.45);
+            backdrop-filter: blur(10px) saturate(180%);
+            -webkit-backdrop-filter: blur(10px) saturate(180%);
+            border: 1px solid rgba(0, 200, 255, 0.2);
+            border-radius: 32px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(0, 230, 255, 0.2), 0 0 20px rgba(153, 69, 255, 0.3);
+            transition: transform 0.2s ease, box-shadow 0.3s ease;
+        }
+        .glass-card:hover {
+            box-shadow: 0 30px 50px rgba(0, 0, 0, 0.8), 0 0 0 2px rgba(0, 230, 255, 0.5), 0 0 40px #7f3aff;
+            border-color: rgba(153, 69, 255, 0.6);
+        }
+
+        /* headings with orbitron */
+        h1, h2, h3, h4, .orbitron {
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            background: linear-gradient(135deg, #ffffff, #b0d0ff, #a67cff);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            line-height: 1.2;
+        }
+
+        h2 {
+            font-size: 2.8rem;
+            margin-bottom: 1.5rem;
+            text-shadow: 0 0 10px #00a3ff;
+        }
+
+        /* button style */
+        .btn-primary {
+            background: rgba(0, 150, 255, 0.12);
+            border: 2px solid #00e0ff;
+            color: #e2f0ff;
+            padding: 1rem 3rem;
+            font-size: 1.2rem;
+            font-weight: 600;
+            border-radius: 60px;
+            backdrop-filter: blur(8px);
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 0 20px #00a3ff80, inset 0 0 10px #00c3ff20;
+            font-family: 'Poppins', sans-serif;
+            letter-spacing: 2px;
+            margin-top: 2rem;
+        }
+        .btn-primary:hover {
+            background: #00c8ff;
+            color: #000c1a;
+            border-color: #b07cff;
+            box-shadow: 0 0 40px #9f7aff, 0 0 60px #0044ff;
+            transform: scale(1.05);
+        }
+
+        /* hover sliding definition panels — parent wrapper */
+        .hover-project {
+            position: relative;
+            display: inline-block;
+            cursor: default;
+            width: 100%;
+        }
+
+        .project-card {
+            background: rgba(12, 20, 35, 0.6);
+            backdrop-filter: blur(12px);
+            border: 1px solid #2979ff40;
+            border-radius: 40px;
+            padding: 2.5rem 2rem;
+            transition: all 0.25s;
+            box-shadow: 0 15px 30px -10px #00000099, 0 0 0 1px #3a5fff inset;
+            height: 100%;
+        }
+        .project-card .project-name {
+            font-size: 2.4rem;
+            font-weight: 700;
+            font-family: 'Orbitron', sans-serif;
+            color: #b2eeff;
+            text-shadow: 0 0 15px cyan;
+            margin-bottom: 0.5rem;
+        }
+
+        /* sliding panel */
+        .sliding-definition {
+            position: absolute;
+            top: 10%;
+            right: -20px; /* start hidden off the right edge */
+            width: 280px;
+            background: rgba(0, 20, 40, 0.85);
+            backdrop-filter: blur(16px);
+            border-left: 4px solid #8a6eff;
+            border-radius: 24px;
+            padding: 1.6rem 1.8rem;
+            box-shadow: 0 25px 50px #000, 0 0 30px #6f4eff, 0 0 15px cyan;
+            opacity: 0;
+            transition: opacity 0.3s ease, right 0.4s cubic-bezier(0.2, 0.9, 0.3, 1.2);
+            pointer-events: none;
+            z-index: 100;
+            font-size: 1rem;
+            color: #e0edff;
+            border: 1px solid cyan;
+            font-weight: 400;
+        }
+
+        .hover-project:hover .sliding-definition {
+            opacity: 1;
+            right: -30px;  /* slide into view */
+        }
+
+        /* for mobile we adjust */
+        @media (max-width: 900px) {
+            .sliding-definition {
+                width: 200px;
+                font-size: 0.9rem;
+                padding: 1rem;
+                right: -10px;
+            }
+            .hover-project:hover .sliding-definition {
+                right: -15px;
+            }
+        }
+
+        /* founder premium card */
+        .founder-card {
+            background: rgba(10, 15, 30, 0.5);
+            backdrop-filter: blur(14px);
+            border: 1px solid #7f9eff;
+            border-radius: 40px;
+            padding: 2.5rem 2rem;
+            box-shadow: 0 0 30px #4169e1, 0 20px 40px #00000080;
+            transition: all 0.3s;
+            display: flex;
+            flex-direction: column;
+            gap: 1.2rem;
+        }
+        .founder-card:hover {
+            box-shadow: 0 0 60px #5f3bff, 0 0 20px #00dcff;
+            border-color: #b56eff;
+        }
+        .founder-name {
+            font-size: 2.5rem;
+            font-family: 'Orbitron', sans-serif;
+            background: linear-gradient(145deg, #fff, #b6c8ff);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        /* grid layout */
+        .grid-2, .grid-3 {
+            display: grid;
+            gap: 2.5rem;
+        }
+        .grid-2 {
+            grid-template-columns: repeat(2, 1fr);
+        }
+        .grid-3 {
+            grid-template-columns: repeat(3, 1fr);
+        }
+        @media (max-width: 900px) {
+            .grid-2, .grid-3 {
+                grid-template-columns: 1fr;
+            }
+            h2 { font-size: 2rem; }
+        }
+
+        section {
+            margin: 7rem 0;
+        }
+
+        /* footer minimal */
+        footer {
+            margin-top: 6rem;
+            padding: 3rem 0 2rem;
+            text-align: center;
+            border-top: 1px solid rgba(0, 255, 255, 0.2);
+            box-shadow: 0 -10px 30px -15px #00aaff50;
+            font-family: 'Poppins', sans-serif;
+            font-weight: 300;
+            letter-spacing: 2px;
+        }
+        .glow-line {
+            width: 150px;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, cyan, #b86eff, transparent);
+            margin: 1.5rem auto 1rem;
+            border-radius: 4px;
+            filter: blur(1px);
+        }
+
+        /* particle canvas fully absolute */
+        canvas {
+            display: block;
+        }
+        .hero-tagline {
+            font-size: 1.8rem;
+            color: #b0eaff;
+        }
+        .hero-sub {
+            font-size: 1.3rem;
+            max-width: 600px;
+            color: #cbd5ff;
+        }
+
+        /* spacing */
+        .hero {
+            min-height: 85vh;
+            display: flex;
+            align-items: center;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="particle-canvas"></canvas>
+    <div class="main-wrapper">
+        <!-- HERO SECTION -->
+        <section class="hero" id="home">
+            <div style="max-width: 900px;">
+                <h1 style="font-size: 5rem; margin-bottom: 0.2rem; letter-spacing: 5px;">AUREX SYSTEMS</h1>
+                <div class="hero-tagline orbitron" style="font-weight: 500; margin-bottom: 1rem;">⚡ Engineering Intelligent Futures</div>
+                <div class="hero-sub" style="margin-bottom: 2rem;">Designing next-generation AI systems to empower humanity and redefine innovation.</div>
+                <button class="btn-primary" onclick="document.getElementById('mission').scrollIntoView({behavior:'smooth'})">Explore Our Vision</button>
+            </div>
+        </section>
+
+        <!-- FOUNDER SECTION -->
+        <section id="founder">
+            <h2>✦ FOUNDER & CREATOR</h2>
+            <div class="founder-card">
+                <div class="founder-name">Siddharth Roakde</div>
+                <div style="font-size: 1.4rem; color: #b8dbff; font-weight: 300;">Visionary · Aurex Systems</div>
+                <p style="font-size: 1.2rem; max-width: 800px; color: #d3e5ff;">Siddharth Roakde is the founder and visionary behind Aurex Systems. His mission is to create powerful, ethical artificial intelligence systems that enhance human capability, improve decision-making, and shape the technological future of society.</p>
+                <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+                    <span style="border:1px solid cyan; border-radius: 40px; padding: 0.4rem 1.5rem;">🔮 ethics first</span>
+                    <span style="border:1px solid #b47cff; border-radius: 40px; padding: 0.4rem 1.5rem;">🧠 singularity approach</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- MISSION SECTION -->
+        <section id="mission">
+            <h2>🚀 OUR VISION</h2>
+            <div class="glass-card" style="padding: 3rem; font-size: 1.5rem; background: rgba(0,15,30,0.5);">
+                <p style="max-width: 1000px;">Aurex Systems is committed to developing advanced AI technologies that benefit humanity, solve complex global challenges, and push the limits of predictive intelligence and human-computer interaction.</p>
+            </div>
+        </section>
+
+        <!-- CORE PROJECTS (interactive hover cards) -->
+        <section>
+            <h2>🤖 CORE PROJECTS</h2>
+            <div class="grid-2">
+                <!-- Controily -->
+                <div class="hover-project">
+                    <div class="project-card glass-card">
+                        <span class="project-name">CONTROILY</span>
+                        <div style="font-size: 1.2rem; opacity: 0.9;">AI gesture control · seamless interaction</div>
+                    </div>
+                    <div class="sliding-definition">
+                        <strong style="color:#7df9ff; font-size:1.3rem;">◈ Controily</strong><br>
+                        An AI-powered gesture control system that enables users to control computers and smart devices using natural hand movements, creating seamless and intuitive interaction.
+                    </div>
+                </div>
+                <!-- Atnos -->
+                <div class="hover-project">
+                    <div class="project-card glass-card">
+                        <span class="project-name">ATNOS</span>
+                        <div style="font-size: 1.2rem; opacity: 0.9;">predictive intelligence · foresight</div>
+                    </div>
+                    <div class="sliding-definition">
+                        <strong style="color:#7df9ff; font-size:1.3rem;">◈ Atnos</strong><br>
+                        A predictive intelligence system that analyzes data patterns to forecast possible outcomes across different scenarios, helping users make smarter strategic decisions.
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- MAJOR INNOVATIONS -->
+        <section>
+            <h2>🌌 MAJOR INNOVATIONS</h2>
+            <div class="grid-2" style="grid-template-columns: repeat(2,1fr);">
+                <!-- Zenxix -->
+                <div class="hover-project">
+                    <div class="project-card glass-card">
+                        <span class="project-name">ZENXIX</span>
+                        <div style="font-size: 1.2rem;">context-aware conversational AI</div>
+                    </div>
+                    <div class="sliding-definition">
+                        <strong style="color:#ffb3ff;">✧ Zenxix</strong><br>
+                        An advanced conversational AI chatbot built to understand context, adapt to users, and provide intelligent multi-domain assistance.
+                    </div>
+                </div>
+                <!-- CodePilot -->
+                <div class="hover-project">
+                    <div class="project-card glass-card">
+                        <span class="project-name">CODEPILOT</span>
+                        <div style="font-size: 1.2rem;">AI web dev · automation</div>
+                    </div>
+                    <div class="sliding-definition">
+                        <strong style="color:#ffb3ff;">✧ CodePilot</strong><br>
+                        An AI-powered web development platform that helps users design and build websites efficiently using intelligent automation and smart coding support.
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- FOOTER with animated divider -->
+        <footer>
+            <div style="font-size: 1.5rem; font-family: 'Orbitron';">Aurex Systems</div>
+            <div>© 2026 · Built for the Future</div>
+            <div class="glow-line"></div>
+            <div style="margin-top: 2rem; opacity: 0.8; font-size: 0.9rem; letter-spacing: 2px;">✦ BEYOND INTELLIGENCE ✦</div>
+        </footer>
+    </div>
+
+    <!-- particle animation -->
+    <script>
+        (function() {
+            const canvas = document.getElementById('particle-canvas');
+            const ctx = canvas.getContext('2d');
+            let width, height;
+            let particles = [];
+
+            function initParticles() {
+                const count = 100;
+                particles = [];
+                for (let i = 0; i < count; i++) {
+                    particles.push({
+                        x: Math.random() * width,
+                        y: Math.random() * height,
+                        vx: (Math.random() - 0.5) * 0.6,
+                        vy: (Math.random() - 0.5) * 0.6,
+                        radius: Math.random() * 2.2 + 0.8,
+                        alpha: Math.random() * 0.6 + 0.2,
+                        color: Math.random() > 0.5 ? '#4aa5ff' : '#b77aff'
+                    });
+                }
+            }
+
+            function resizeCanvas() {
+                width = window.innerWidth;
+                height = window.innerHeight;
+                canvas.width = width;
+                canvas.height = height;
+                initParticles();
+            }
+
+            function drawParticles() {
+                if (!ctx) return;
+                ctx.clearRect(0, 0, width, height);
+                ctx.fillStyle = '#030614'; // deep background (matches body)
+                ctx.fillRect(0, 0, width, height);
+
+                // draw particles and faint connections
+                for (let i = 0; i < particles.length; i++) {
+                    const p = particles[i];
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+                    ctx.fillStyle = p.color;
+                    ctx.shadowColor = '#80c4ff';
+                    ctx.shadowBlur = 12;
+                    ctx.fill();
+                    
+                    // update position
+                    p.x += p.vx;
+                    p.y += p.vy;
+
+                    // wrap around edges
+                    if (p.x < 0) p.x = width;
+                    if (p.x > width) p.x = 0;
+                    if (p.y < 0) p.y = height;
+                    if (p.y > height) p.y = 0;
+
+                    // connect near particles
+                    for (let j = i + 1; j < particles.length; j++) {
+                        const p2 = particles[j];
+                        const dx = p.x - p2.x;
+                        const dy = p.y - p2.y;
+                        const dist = Math.sqrt(dx*dx + dy*dy);
+                        if (dist < 90) {
+                            ctx.beginPath();
+                            ctx.strokeStyle = `rgba(100, 180, 255, ${0.15 * (1 - dist/150)})`;
+                            ctx.lineWidth = 0.6;
+                            ctx.shadowBlur = 8;
+                            ctx.moveTo(p.x, p.y);
+                            ctx.lineTo(p2.x, p2.y);
+                            ctx.stroke();
+                        }
+                    }
+                }
+                requestAnimationFrame(drawParticles);
+            }
+
+            window.addEventListener('resize', resizeCanvas);
+            resizeCanvas();
+            drawParticles();
+
+            // optional: mouse effect (dense particles)
+            let mouse = { x: null, y: null };
+            window.addEventListener('mousemove', (e) => {
+                mouse.x = e.clientX;
+                mouse.y = e.clientY;
+                // subtle attraction to mouse for few particles
+                for (let i = 0; i < particles.length; i+=3) {
+                    let p = particles[i];
+                    let dx = mouse.x - p.x;
+                    let dy = mouse.y - p.y;
+                    let dist = Math.sqrt(dx*dx + dy*dy);
+                    if (dist < 120) {
+                        p.x += dx * 0.008;
+                        p.y += dy * 0.008;
+                    }
+                }
+            });
+        })();
+    </script>
+
+    <!-- smooth scroll behavior is native + add little glow to sliding panels on hover -->
+    <style>
+        /* additional premium touches */
+        .project-card {
+            position: relative;
+            z-index: 5;
+            overflow: hidden;
+        }
+        .project-card::after {
+            content: '';
+            position: absolute;
+            top: -2px; left: -2px; right: -2px; bottom: -2px;
+            background: linear-gradient(125deg, rgba(0,255,255,0) 30%, rgba(100,80,255,0.2), transparent);
+            border-radius: 42px;
+            z-index: -1;
+            opacity: 0;
+            transition: opacity 0.5s;
+        }
+        .project-card:hover::after {
+            opacity: 1;
+        }
+        .sliding-definition {
+            backdrop-filter: blur(20px);
+            background: rgba(0, 8, 22, 0.85);
+            border: 1px solid cyan;
+            line-height: 1.5;
+        }
+        /* make website responsive */
+        @media (max-width: 700px) {
+            .hero h1 { font-size: 3rem; }
+            .hero-tagline { font-size: 1.2rem; }
+            .btn-primary { padding: 0.8rem 1.8rem; }
+            .sliding-definition { width: 170px; padding: 0.8rem; right: -5px; }
+            .hover-project:hover .sliding-definition { right: -5px; }
+        }
+        /* additional glassmorphism for main sections */
+        .glass-card p {
+            font-weight: 300;
+            text-shadow: 0 2px 5px #00000070;
+        }
+    </style>
+    <!-- extra smoothness -->
+</body>
+</html>
